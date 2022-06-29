@@ -15,7 +15,6 @@ sensors = [
 LastUpdated = 0
 
 window.properties.current_combination = {}
-window.properties.sensor_status = {}
 
 var gamewindow = document.createElement("h1");
 gamewindow.innerText = "";
@@ -63,8 +62,9 @@ function gameLoop(){
     // 	return;
     // }
 
+    console.log(window.properties.sensor_status.sensors[window.properties.current_combination])
     if (window.properties.sensor_status.sensors[window.properties.current_combination] == 0){
-    	log.console("Success!!!")
+    	console.log("Success!!!")
     	clearInterval(combinationInterval)
     	changeCurrentCombination();
 		combinationInterval = setInterval(changeCurrentCombination, 5000);
