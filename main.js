@@ -1,9 +1,26 @@
 SensorEndpoint = ""
-window.properties = {"sensor_status":{
+window.properties = {
+	"sensor_status":{
 		"sensor1" : true,
 		"sensor2" : true
 	}
 }
+
+sensors = ["BOTTOM", "MIDDLE", "TOP", "LEFT", "RIGHT"]
+
+window.properties.current_combination = []
+
+var gamewindow = document.createElement("h1");
+gamewindow.innerText = "";
+document.getElementsByTagName("body")[0].appendChild(gamewindow)
+
+function changeCurrentCombination(){
+
+	window.properties.current_combination = sensors[Math.floor(Math.random() * sensors.length)]
+	console.log(window.properties.current_combination)
+	gamewindow.innerText = window.properties.current_combination
+}
+
 
 function gameLoop(){
 
@@ -21,9 +38,12 @@ function gameLoop(){
 	xhttp.send()
 	console.log(window.location)
 
-	console.log(JSON.stringify(window.properties))
+
+
 }
+
 
 
 setInterval(gameLoop, 250);
 
+setInterval(changeCurrentCombination, 5000);
