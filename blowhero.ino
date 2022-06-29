@@ -12,6 +12,8 @@ const char* game = "<body><script> var xhttp=new XMLHttpRequest;xhttp.onreadysta
 int BOTTOM = 0; // D3
 int MIDDLE = 5; // D2
 int TOP = 4;    // D1
+int LEFT = 2;    // D4
+int RIGHT = 14;    // D5
 
 void setup() {
   Serial.begin(115200); //Begin Serial at 115200 Baud
@@ -21,6 +23,8 @@ void setup() {
   pinMode(BOTTOM, INPUT_PULLUP);
   pinMode(MIDDLE, INPUT_PULLUP);
   pinMode(TOP, INPUT_PULLUP);
+  pinMode(LEFT, INPUT_PULLUP);
+  pinMode(RIGHT, INPUT_PULLUP);
   
   while (WiFi.status() != WL_CONNECTED) {  //Wait for connection
       delay(500);
@@ -54,8 +58,8 @@ void handle_sensor_status() {
   sensorStatus["sensors"]["BOTTOM"] = digitalRead(BOTTOM);
   sensorStatus["sensors"]["MIDDLE"] = digitalRead(MIDDLE);
   sensorStatus["sensors"]["TOP"] = digitalRead(TOP);
-  sensorStatus["sensors"]["LEFT"] = false;
-  sensorStatus["sensors"]["RIGHT"] = false;
+  sensorStatus["sensors"]["LEFT"] = digitalRead(LEFT);
+  sensorStatus["sensors"]["RIGHT"] = digitalRead(RIGHT);
 
   String jsonString = JSON.stringify(sensorStatus);
   server.send(200, "application/json", jsonString.c_str());
