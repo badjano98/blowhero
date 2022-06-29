@@ -50,17 +50,17 @@ function gameLoop(){
     var last_updated_tmp = LastUpdated
     LastUpdated = window.properties.sensor_status["last-updated"]
 
-    if (last_updated_tmp <= LastUpdated){
-    	console.log("disconnected")
-    	clearInterval(gameLoopInterval)
-    	return;
-    }
+    // if (last_updated_tmp <= LastUpdated){
+    // 	console.log("disconnected")
+    // 	clearInterval(gameLoopInterval)
+    // 	return;
+    // }
 
-    if (window.properties.sensor_status.sensors == null){
-    	console.log("disconnected")
-    	clearInterval(gameLoopInterval)
-    	return;
-    }
+    // if (window.properties.sensor_status.sensors == null){
+    // 	console.log("disconnected")
+    // 	clearInterval(gameLoopInterval)
+    // 	return;
+    // }
 
     if (window.properties.sensor_status.sensors[window.properties.current_combination] == 1){
     	log.console("Success!!!")
