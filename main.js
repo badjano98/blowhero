@@ -1,18 +1,19 @@
 SensorEndpoint = ""
 window.properties = {
-	"sensor_status":{
-		"sensor1" : true,
-		"sensor2" : true
-	}
+	"last-updated" : 0
 }
 
 sensors = ["BOTTOM", "MIDDLE", "TOP", "LEFT", "RIGHT"]
+LastUpdated = 0
 
 window.properties.current_combination = []
+
 
 var gamewindow = document.createElement("h1");
 gamewindow.innerText = "";
 document.getElementsByTagName("body")[0].appendChild(gamewindow)
+
+var gameLoopInterval = null
 
 function changeCurrentCombination(){
 
@@ -32,11 +33,22 @@ function gameLoop(){
     	   window.properties.sensor_status = xhttp.responseText;
     	}
 	};
-    console.log(window.properties.sensor_status);
 
 	xhttp.open("GET", window.location + "api/v1/sensor-status", true);
 	xhttp.send()
-	console.log(window.location)
+
+
+    console.log(window.properties.sensor_status);
+
+    var last_updated_tmp = LastUpdated
+    LastUpdated = window.properties.sensor_status["last-updated"]
+
+    if (last_updated_tmp <= LastUpdated){
+    	console.log("disconnected")
+    	clearInterval(gameLoopInterval)
+    	return;
+    }
+
 
 
 
