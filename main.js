@@ -1,5 +1,9 @@
 SensorEndpoint = ""
-window.properties = {}
+window.properties = {"sensor_status":{
+		"sensor1" : true,
+		"sensor2" : true
+	}
+}
 
 function gameLoop(){
 
@@ -12,16 +16,12 @@ function gameLoop(){
     	}
 	};
     console.log(window.properties.sensor_status);
-    console.log("Freezing...");
 
-	// while (window.properties.sensor_status == null){
-	xhttp.open("GET", window.location + "api/v1/sensor-status", false);
+	xhttp.open("GET", window.location + "api/v1/sensor-status", true);
 	xhttp.send()
-	// }
-    console.log("Unfroze...");
 	console.log(window.location)
-	
 
+	console.log(JSON.stringify(window.properties))
 }
 
 
