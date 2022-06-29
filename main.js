@@ -1,4 +1,5 @@
 SensorEndpoint = ""
+window.properties = {}
 window.properties.sensor_status = {
 	"last-updated" : 0,
 	"sensors" : []
