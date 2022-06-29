@@ -16,8 +16,11 @@ function gameLoop(){
 	xhttp.open("GET", window.location + "api/v1/sensor-status", true);
 	xhttp.send()
 
-	while (sensor_status == null){}
     console.log(sensor_status);
+    console.log("Freezing...");
+
+	while (sensor_status == null){}
+    console.log("Unfroze...");
 	console.log(window.location)
 	
 
