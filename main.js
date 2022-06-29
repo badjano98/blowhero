@@ -1,7 +1,6 @@
-https://raw.githubusercontent.com/badjano98/blowhero/main/main.js
 SensorEndpoint = ""
 
-function gameloop(){
+function gameLoop(){
 
 	var sensor_status = null
 	console.log("update")
