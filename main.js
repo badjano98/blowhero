@@ -25,5 +25,5 @@ function gameLoop(){
 }
 
 
-setTimeout(gameLoop, 250);
+setInterval(gameLoop, 250);
 
