@@ -7,7 +7,7 @@ sensors = ["BOTTOM", "MIDDLE", "TOP", "LEFT", "RIGHT"]
 LastUpdated = 0
 
 window.properties.current_combination = []
-
+window.properties.sensor_status = {}
 
 var gamewindow = document.createElement("h1");
 gamewindow.innerText = "";
@@ -56,6 +56,6 @@ function gameLoop(){
 
 
 
-setInterval(gameLoop, 250);
+gameLoopInterval = setInterval(gameLoop, 250);
 
 setInterval(changeCurrentCombination, 5000);
