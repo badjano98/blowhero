@@ -1,5 +1,5 @@
 SensorEndpoint = ""
-window.properties = {
+window.properties.sensor_status = {
 	"last-updated" : 0,
 	"sensors" : []
 }
@@ -37,7 +37,7 @@ function gameLoop(){
 	xhttp.onreadystatechange = function() {
     	if (this.readyState == 4 && this.status == 200) {
  		// Update sensor status
-    	   window.properties.sensor_status = xhttp.responseText;
+    	   window.properties.sensor_status = JSON.parse(xhttp.responseText);
     	}
 	};
 
@@ -45,7 +45,7 @@ function gameLoop(){
 	xhttp.send()
 
 
-    // console.log(window.properties.sensor_status);
+    console.log(window.properties.sensor_status);
 
     var last_updated_tmp = LastUpdated
     LastUpdated = window.properties.sensor_status["last-updated"]
@@ -65,6 +65,7 @@ function gameLoop(){
     if (window.properties.sensor_status.sensors[window.properties.current_combination] == 0){
     	log.console("Success!!!")
     	clearInterval(combinationInterval)
+    	changeCurrentCombination();
 		combinationInterval = setInterval(changeCurrentCombination, 5000);
     }
 
