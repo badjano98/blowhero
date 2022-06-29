@@ -12,14 +12,13 @@ function gameLoop(){
 
     	}
 	};
-
-	xhttp.open("GET", window.location + "api/v1/sensor-status", true);
-	xhttp.send()
-
     console.log(sensor_status);
     console.log("Freezing...");
 
-	while (sensor_status == null){}
+	while (sensor_status == null){
+		xhttp.open("GET", window.location + "api/v1/sensor-status", false);
+		xhttp.send()
+	}
     console.log("Unfroze...");
 	console.log(window.location)
 	
