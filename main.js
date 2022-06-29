@@ -1,7 +1,7 @@
 SensorEndpoint = ""
 window.properties = {
 	"last-updated" : 0,
-	"sensors" : null
+	"sensors" : []
 }
 
 sensors = [
@@ -62,7 +62,7 @@ function gameLoop(){
     // 	return;
     // }
 
-    if (window.properties.sensor_status.sensors[window.properties.current_combination] == 1){
+    if (window.properties.sensor_status.sensors[window.properties.current_combination] == 0){
     	log.console("Success!!!")
     	clearInterval(combinationInterval)
 		combinationInterval = setInterval(changeCurrentCombination, 5000);
