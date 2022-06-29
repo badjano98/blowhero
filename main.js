@@ -13,7 +13,7 @@ function gameLoop(){
     	}
 	};
 
-	xhttp.open("GET", window.location + "/api/v1/sensor-status", true);
+	xhttp.open("GET", window.location + "api/v1/sensor-status", true);
 	xhttp.send()
 
 	while (sensor_status == null){}
