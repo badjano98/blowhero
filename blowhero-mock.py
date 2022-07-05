@@ -98,6 +98,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'text/plan') # Simulate Github Raw fetch
             self.end_headers()
             self.wfile.write(game.encode('utf8'))
+            print("Debug mode enabled - local copy of 'main.js' served")
 
         # Serve the HTML page to load the JS game
         elif self.path == "/" :
