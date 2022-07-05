@@ -23,7 +23,6 @@ function getRandomSpot(){
 	return sensors[Math.floor(Math.random() * sensors.length)]
 }
 
-
 good_remarks = [
 	"Ahhh",
 	"Yeah",
@@ -55,16 +54,17 @@ var gamewindow = document.createElement("h1");
 gamewindow.innerText = "";
 document.getElementsByTagName("body")[0].appendChild(gamewindow)
 
-var remarkwindow = document.createElement("h1");
-remarkwindow.innerText = "";
-document.getElementsByTagName("body")[0].appendChild(remarkwindow)
-
 var climaxwindow = document.createElement("h1");
 document.getElementsByTagName("body")[0].appendChild(climaxwindow)
 function updateClimax(){
 	climaxwindow.innerText = index.toString();
 }
 updateClimax()
+
+var remarkwindow = document.createElement("h1");
+remarkwindow.innerText = "";
+document.getElementsByTagName("body")[0].appendChild(remarkwindow)
+
 
 // ==============================================================
 window.intervals.gameLoopInterval = null
@@ -157,13 +157,12 @@ function gameLoop(){
     console.log(window.properties.sensor_status.sensors[window.properties.current_combination] == TOUCHED)
     // If the touch is right, proceed on giving pleasure
     if (window.properties.sensor_status.sensors[window.properties.current_combination] == TOUCHED){
+
 	// Consume the touch
 	window.properties.sensor_status.sensors[window.properties.current_combination] == UNTOUCHED
 
-	// Say a good remark
-	clearTimeout(window.intervals.remarkInterval)
-	changeCurrentRemark(set=true)
-	window.intervals.remarkInterval = setTimeout(changeCurrentRemark, 1000)
+	// Pick a good remark
+	remarks = good_remarks
 
 	// Move to next touch
 	index = index + 1
@@ -171,21 +170,23 @@ function gameLoop(){
     }
     // If the touch is wrong
     else {
-	// Say a bad remark
-	clearTimeout(window.intervals.remarkInterval)
-	changeCurrentRemark(set=true, remarks=bad_remarks)
-	window.intervals.remarkInterval = setTimeout(changeCurrentRemark, 1000)
+	// Pick a bad remark
+	remarks = bad_remarks
 	
 	// climax down some touches
 	index = index - 2
     }
+
+    // Say remark
+    clearTimeout(window.intervals.remarkInterval)
+    changeCurrentRemark(set=true, remarks=remarks)
+    window.intervals.remarkInterval = setTimeout(changeCurrentRemark, 1000)
+
     // Change combination
     clearInterval(window.intervals.combinationInterval)
     changeCurrentCombination(touched=true);
     window.intervals.combinationInterval = setInterval(changeCurrentCombination, 5000);
 }
-
-
 
 window.intervals.gameLoopInterval = setInterval(gameLoop, 200);
 window.intervals.climaxInterval = setInterval(updateClimax, 200);
