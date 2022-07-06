@@ -15,7 +15,7 @@ import os
 
 DEBUG = os.environ.get("BLOWHERO_DEBUG", "")
 GAME_FILE = os.environ.get("BLOWHERO_GAME_FILE", "main.js")
-GAME_URL = "/js" if DEBUG else "https://raw.githubusercontent.com/badjano98/blowhero/main/main.js"
+GAME_URL = "/js" if DEBUG else f"https://raw.githubusercontent.com/badjano98/blowhero/main/{GAME_FILE}"
 
 # Dynamically load remote Javascript, exactly as in:
 # https://github.com/badjano98/blowhero/blob/main/blowhero.ino#L10
