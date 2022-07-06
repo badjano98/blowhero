@@ -11,9 +11,10 @@ import os
 # If 'BLOWHERO_DEBUG' is set to any value ("True", "1", etc)
 # the local `main.js` will be loaded from `/js` endpoint.
 # Else the Javascript will be fetched from Github
-# BLOWHERO_DEBUG=1 python blowhero-mock.py
+# BLOWHERO_DEBUG=1 BLOWHERO_GAME_FILE=main.js python blowhero-mock.py
 
 DEBUG = os.environ.get("BLOWHERO_DEBUG", "")
+GAME_FILE = os.environ.get("BLOWHERO_GAME_FILE", "main.js")
 GAME_URL = "/js" if DEBUG else "https://raw.githubusercontent.com/badjano98/blowhero/main/main.js"
 
 # Dynamically load remote Javascript, exactly as in:
@@ -92,13 +93,13 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
         # Serve the JS game from local file (DEBUG mode)
         elif re.search('/js', self.path):
             assert DEBUG # If debug is not set, there is no way to reach the /js endpoint
-            with open("main.js") as js:
+            with open(GAME_FILE) as js:
                 game = js.read()
             self.send_response(200)
             self.send_header('Content-Type', 'text/plan') # Simulate Github Raw fetch
             self.end_headers()
             self.wfile.write(game.encode('utf8'))
-            print("Debug mode enabled - local copy of 'main.js' served")
+            print(f"Debug mode enabled - local copy of '{GAME_FILE}' served")
 
         # Serve the HTML page to load the JS game
         elif self.path == "/" :
