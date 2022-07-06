@@ -23,13 +23,19 @@ canvas.style.left = img.offsetLeft;
 canvas.style.top = img.offsetTop;
 ctx = canvas.getContext("2d");
 
-function drawSpot(location, type="TOUCH"){
+function drawSpot(location, type="TOUCH", text=""){
 	ctx.lineWidth = 3
+	ctx.font = "56px Arial";
+	ctx.strokeStyle = "#000000";
+	ctx.fillStyle = "#000000";
 
-	if (type == "TOUCH")
+	radius = 38
+	if (type == "TOUCH"){
 		ctx.fillStyle = "#ff0000";
-	else if (type == "CLEAR")
-		ctx.fillStyle = "transparent";
+		radius = 35
+	}
+	else if (type == "CORRECT")
+		ctx.fillStyle = "#00ff00";
 	else if (type == "OBJECTIVE"){
 		draw_function = ctx.stroke
 		ctx.strokeStyle = "#000000";
@@ -37,32 +43,30 @@ function drawSpot(location, type="TOUCH"){
 
 	ctx.beginPath();
 	if (location == "BOTTOM"){
-		ctx.arc(150, 375, 40, 0, Math.PI * 2, true);
+		x = 150; y = 375
 	}
 	else if (location == "MIDDLE"){
-		ctx.arc(150, 225, 40, 0, Math.PI * 2, true);
+		x = 150; y = 225
 	}
 	else if (location == "TOP"){
-		ctx.arc(150, 80, 40, 0, Math.PI * 2, true);
+		x = 150; y = 80
 	}
 	else if (location == "RIGHT"){
-		ctx.arc(100, 150, 40, 0, Math.PI * 2, true);
+		x = 100; y = 150
 	}
 	else if (location == "LEFT"){
-		ctx.arc(200, 150, 40, 0, Math.PI * 2, true);
+		x = 200; y = 150
 	}
+	ctx.arc(x, y, radius, 0, Math.PI * 2, true);
+	ctx.fillText(text, x-(radius/2), y+(radius/2))
 
-	if (type == "TOUCH" || type == "CLEAR")
+	if (type == "TOUCH" || type == "CORRECT")
 		ctx.fill()
-	else if (type == "OBJECTIVE"){
-		ctx.fill()
-	}
+	else if (type == "OBJECTIVE")
+		ctx.stroke()
+	else if (type == "CLEAR")
+		ctx.clearRect(x-40, y-40, 80, 80)
 }
-// drawSpot("BOTTOM")
-// drawSpot("MIDDLE")
-// drawSpot("TOP", touch=true)
-// drawSpot("RIGHT")
-// drawSpot("LEFT")
 
 function clearSpots() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -89,7 +93,7 @@ SENSORS = [
 	"TOP",
 	"LEFT",
 	"RIGHT"
-	]
+]
 
 REMARKS_GOOD = [
 	"Ahhh",
@@ -98,39 +102,40 @@ REMARKS_GOOD = [
 	"That's the spot!",
 	"Don't stop",
 ]
-
 REMARKS_BAD = [
 	"Oh nooo",
 	"Not that",
 	"Not like this",
 	"Oh please",
 ]
-
 REMARKS_STOP_GAME = [
 	"Don't worry, it happens to everyone!",
 
 ]
-
 REMARKS_NOT_TOUCHING = [
 	"You need to touch it!"
 ]
-
 REMARKS_STARTING = ["Lick the tip to start :)"]
 
-REMARKS_SUSTAIN = 1600
+REMARKS_SUSTAIN = 800
 
 CLIMAX_MAX = 10
 CLIMAX_ACCEL = 0.05
+
+POINT_SUSTAIN = 500
+
+UNTOUCHED_INTERVAL_INITIAL = 4000
+
+GAME_LOOP_INTERVAL = 200   // miliseconds
+
+// ================================================================= Variables
 CLIMAX = 0
-CLIMAX_COMBINATION_LIST = []
 CLIMAX_COMBINATION_CURRENT = null
+CLIMAX_COMBINATION_LIST = []
 
-POINT_SUSTAIN = 200
+UNTOUCHED_INTERVAL = UNTOUCHED_INTERVAL_INITIAL
+UNTOUCHED_TIMEOUT = null
 
-UNTOUCHED_COUNTER = 0
-UNTOUCHED_COUNTER_MAX = 60 // updates untouched
-
-GAME_LOOP_INTERVAL = 200 		 // miliseconds
 GAME_LOOP = null
 
 STARTED = false
@@ -181,31 +186,6 @@ function updateSensorStatus(){
 	xhttp.send()
 }
 
-function stopGame(){
-	console.log("Game stopped")
-	clearInterval(GAME_LOOP)
-}
-
-function gameLoop(){
-	updateSensorStatus()
-	if (SENSOR_STATUS == null){
-		stopGame()
-		return
-	}
-
-	changeRemark(set=true)
-	for (const spot of SENSORS){
-		console.log(SENSOR_STATUS['sensors'][spot])
-		if (SENSOR_STATUS['sensors'][spot] == TOUCHED){
-			// console.log(spot)
-			drawSpot(spot, type="TOUCH")
-			setTimeout(drawSpot(spot, type="CLEAR"), POINT_SUSTAIN)
-		}
-	}
-
-	// clearSpots()
-}
-
 function startGame(){
 	CLIMAX = 0
 	UNTOUCHED_COUNTER = 0
@@ -213,6 +193,111 @@ function startGame(){
 	STARTED = true
 	GAME_LOOP = setInterval(gameLoop, GAME_LOOP_INTERVAL)
 }
+
+function stopGame(){
+	console.log("Game stopped")
+	clearInterval(GAME_LOOP)
+}
+
+function showTouches(){
+	for (const spot of SENSORS){
+		// console.log(SENSOR_STATUS['sensors'][spot])
+		if (SENSOR_STATUS['sensors'][spot] == TOUCHED){
+			// console.log(spot)
+			drawSpot(spot, type="TOUCH")
+			setTimeout(function(){drawSpot(spot, type="CLEAR")}, POINT_SUSTAIN)
+			SENSOR_STATUS['sensors'][spot] == UNTOUCHED
+		}
+	}	
+}
+
+function isTouched(){
+	for (const spot of Object.values(SENSOR_STATUS['sensors'])) {
+		if (spot == TOUCHED)
+			return true
+	}
+	return false
+}
+
+function showObjective(){
+	right_spot = CLIMAX_COMBINATION_LIST[CLIMAX]
+	drawSpot(right_spot, type="OBJECTIVE", text=CLIMAX)
+}
+
+function checkObjective(){
+	right_spot = CLIMAX_COMBINATION_LIST[CLIMAX]
+	var ret = SENSOR_STATUS['sensors'][right_spot] == TOUCHED
+	SENSOR_STATUS['sensors'][right_spot] = UNTOUCHED
+	return ret
+}
+
+function calculateTouchInterval(){
+	UNTOUCHED_INTERVAL = UNTOUCHED_INTERVAL_INITIAL - ((CLIMAX_ACCEL * CLIMAX) * UNTOUCHED_INTERVAL_INITIAL)
+	console.log(UNTOUCHED_INTERVAL)
+}
+
+function climaxUp(){
+	changeRemark(set=true, remarks=REMARKS_GOOD)
+	right_spot = CLIMAX_COMBINATION_LIST[CLIMAX]
+	CLIMAX = CLIMAX + 1
+	drawSpot(right_spot, type="CORRECT")
+	setTimeout(function(){drawSpot(right_spot, type="CLEAR")}, POINT_SUSTAIN)
+}
+
+function climaxDown(){
+	changeRemark(set=true, remarks=REMARKS_BAD)
+	right_spot = CLIMAX_COMBINATION_LIST[CLIMAX]
+	drawSpot(right_spot, type="CLEAR")
+	CLIMAX = CLIMAX - 2
+	if (CLIMAX <= 0) CLIMAX = 0
+	showObjective()
+}
+
+function climaxZero(){
+	changeRemark(set=true, remarks=REMARKS_NOT_TOUCHING)
+	right_spot = CLIMAX_COMBINATION_LIST[CLIMAX]
+	drawSpot(right_spot, type="CLEAR")
+	CLIMAX = 0
+	showObjective()
+	UNTOUCHED_INTERVAL = UNTOUCHED_INTERVAL_INITIAL
+}
+
+// ================================================================= Game Loop
+
+function gameLoop(){
+	updateSensorStatus()
+	if (SENSOR_STATUS == null){
+		stopGame()
+		return
+	}
+	showObjective()
+
+	showTouches()
+
+	if (!isTouched()){
+		if (UNTOUCHED_TIMEOUT == null){
+			calculateTouchInterval()
+			UNTOUCHED_TIMEOUT = setTimeout(
+				climaxZero,
+				UNTOUCHED_INTERVAL
+			)
+		}
+		return
+	}
+	clearTimeout(UNTOUCHED_TIMEOUT); UNTOUCHED_TIMEOUT = null
+
+
+	if (checkObjective()){
+		climaxUp()
+		if (checkWin()){
+			stopGame()
+		}
+	} else {
+		climaxDown()
+	}
+
+}
+
 
 
 // ================================================================= Runtime
