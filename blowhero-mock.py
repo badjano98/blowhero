@@ -101,6 +101,19 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(game.encode('utf8'))
             print(f"Debug mode enabled - local copy of '{GAME_FILE}' served")
 
+        # Serve an 'info' page
+        elif re.search('/api/v1/info', self.path):
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            data = {
+                "version" : "v0.0.1",
+                "type" : "mock",
+                "debug" : bool(DEBUG),
+                "js" : GAME_URL,
+            }
+            self.wfile.write(json.dumps(data).encode('utf8'))
+
         # Serve the HTML page to load the JS game
         elif self.path == "/" :
             self.send_response(200)
