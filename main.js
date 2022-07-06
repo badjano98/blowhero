@@ -6,7 +6,7 @@ window.properties.sensor_status = {
 	"sensors" : []
 }
 
-PULLUP = true
+PULLUP = false
 TOUCHED = PULLUP ? 0 : 1
 UNTOUCHED = PULLUP ? 1 : 0
 
@@ -54,11 +54,10 @@ combination_n = 10
 combination = Array.from({length: combination_n}, () => getRandomSpot())
 console.log(combination)
 index = 0
-climaxAccel = 0.10
-window.properties.current_combination = {}
-combinationTime = 5000
+climaxAccel = 0.08
 untouchedCounter = 0
-untouchedCounterMax = 30 // updates untouched
+untouchedCounterMax = 40 // updates untouched
+gameLoopTime = 200 		 // miliseconds
 // ==============================================================
 
 var gamewindow = document.createElement("h1");
@@ -72,6 +71,12 @@ function updateClimax(){
 	climaxwindow.innerText = index.toString();
 }
 updateClimax()
+
+var untouchedwindow = document.createElement("h2");
+document.getElementsByTagName("body")[0].appendChild(untouchedwindow)
+function updateUntouched(){
+	untouchedwindow.innerText = untouchedCounter.toString() + "/" + untouchedCounterMax.toString();
+}
 
 var remarkwindow = document.createElement("h1");
 remarkwindow.innerText = "";
@@ -91,8 +96,6 @@ function getRandomSpot(){
 function changeCurrentCombination(){
 	window.properties.current_combination = combination[index]
 	gamewindow.innerText = window.properties.current_combination
-
-	// window.intervals.combinationInterval = setTimeout(changeCurrentCombination, combinationTime - combinationTime * climaxAccel);	
 }
 
 function changeCurrentRemark(set=false, remarks=good_remarks, permanent=false){
@@ -111,7 +114,6 @@ function startGame(){
 	changeCurrentCombination()
 	changeCurrentRemark(set=false)
 	started = true
-	// window.intervals.combinationInterval = setInterval(changeCurrentCombination, combinationTime)
 }
 
 function isTouched(){
@@ -136,7 +138,7 @@ function winRestart(){
 	index = 0
 	started = false
 	gamewindow.innerText = ""
-	window.intervals.gameLoopInterval = setInterval(gameLoop, 200)
+	window.intervals.gameLoopInterval = setInterval(gameLoop, gameLoopTime)
 }
 
 
@@ -166,7 +168,7 @@ function gameLoop(){
 			startGame()
 		return
 	}
-
+	updateUntouched()
 	if (!isTouched()){
 		untouchedCounter = untouchedCounter + 1
 		if (untouchedCounter >= untouchedCounterMax){
@@ -191,7 +193,9 @@ function gameLoop(){
 
 		// Move to next touch
 		index = index + 1
-		untouchedCounter = untouchedCounterMax * climaxAccel
+
+		// Make the next combination come a little faster (cast to int)
+		untouchedCounter = ~~ (untouchedCounterMax * (climaxAccel * index))
 
 	} else { // If the touch is wrong
 
@@ -207,27 +211,17 @@ function gameLoop(){
 	s = Object.keys(window.properties.sensor_status.sensors)
 	for (const sensor of s)
 		window.properties.sensor_status.sensors[sensor] = UNTOUCHED
-	
+
 	if (checkWin()){
 		winRestart()
 		return
 	}
 
 	// Say remark
-//	clearTimeout(window.intervals.remarkInterval)
 	changeCurrentRemark(set=true, remarks=remarks)
-//	window.intervals.remarkInterval = setTimeout(changeCurrentRemark, 1000)
 
 	// Change combination
-	// clearTimeout(window.intervals.combinationInterval)
 	changeCurrentCombination();
-
-	// Make the next combination come a little faster
-	// window.intervals.combinationInterval = setTimeout(changeCurrentCombination, combinationTime - combinationTime * climaxAccel);
-
-
-
 }
 
 winRestart()
-

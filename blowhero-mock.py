@@ -22,7 +22,7 @@ GAME_URL = "/js" if DEBUG else f"https://raw.githubusercontent.com/badjano98/blo
 HTML = "<body><script> var xhttp=new XMLHttpRequest;xhttp.onreadystatechange=function(){if(4==this.readyState&&200==this.status){var t=document.createElement(\"script\");t.innerHTML=xhttp.responseText,document.getElementsByTagName(\"body\")[0].appendChild(t)}},xhttp.open(\"GET\",\"GAME_URL\",!0),xhttp.send(); </script></body>".replace("GAME_URL",GAME_URL)
 
 # Simulate Arduino INPUT_PULLUP - inverse inputs
-BUTTONS_PULLUP = True
+BUTTONS_PULLUP = False
 
 # Vim-friendly bindings
 BUTTONS = {
