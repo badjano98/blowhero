@@ -21,15 +21,13 @@ var canvas = document.getElementById("dildoCanvas");
 canvas.style.position = "absolute";
 canvas.style.left = img.offsetLeft;
 canvas.style.top = img.offsetTop;
-// ctx = canvas.getContext("2d");
+ctx = canvas.getContext("2d", {desynchronized: true});
 
 function drawSpot(location, type="TOUCH", text=""){
-	var ctx = canvas.getContext("2d");
-	ctx.lineWidth = 3
 	ctx.font = "56px Arial";
 	ctx.strokeStyle = "#000000";
 	ctx.fillStyle = "#000000";
-
+	ctx.lineWidth = 3
 	radius = 38
 	if (type == "TOUCH"){
 		ctx.fillStyle = "rgba(255, 0, 0, 0.1)";
@@ -37,10 +35,8 @@ function drawSpot(location, type="TOUCH", text=""){
 	}
 	else if (type == "CORRECT")
 		ctx.fillStyle = "#00ff00";
-	else if (type == "OBJECTIVE"){
-		ctx.strokeStyle = "#000000";
+	else if (type == "OBJECTIVE")
 		ctx.fillStyle = "#000000";
-	}
 
 	ctx.beginPath();
 	if (location == "BOTTOM"){		x = 150; y = 375}
@@ -61,8 +57,7 @@ function drawSpot(location, type="TOUCH", text=""){
 	ctx.closePath()
 }
 
-function drawClimax(climax = 0, type = "TOUCH"){
-	var ctx = canvas.getContext("2d");
+function drawClimax(climax = 0, type = "TOUCH", erase=false){
 	var grd = ctx.createLinearGradient(0, 0, 200, 0);
 	grd.addColorStop(0, "red");
 	grd.addColorStop(1, "white");
@@ -75,13 +70,12 @@ function drawClimax(climax = 0, type = "TOUCH"){
 		ctx.fillStyle = "rgba(0, 255, 0, 0.3)"; // grd
 		ctx.rect(0*dildoCanvas.width/8, dildoCanvas.height, dildoCanvas.width/8, -dildoCanvas.height*climax/10);
 		ctx.fill();
-	} else if (type == "CLEAR")
+	} if (erase)
 		ctx.clearRect(7*dildoCanvas.width/8, dildoCanvas.height, dildoCanvas.width/8, -dildoCanvas.height*1);
 	// ctx.closePath()
 }
 
 function clearSpots() {
-	var ctx = canvas.getContext("2d");
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	// ctx.closePath()
 }
@@ -140,7 +134,7 @@ UNTOUCHED_INTERVAL_INITIAL = 4000
 
 POINT_SUSTAIN = 500
 
-GAME_LOOP_INTERVAL = 1000/24
+GAME_LOOP_INTERVAL = 1000/60
 
 SENSOR_UPDATE_INTERVAL = 200
 
@@ -226,7 +220,6 @@ function showTouches(consume=false){
 	for (const spot of SENSORS){
 		if (SENSOR_STATUS['sensors'][spot] == TOUCHED){
 			drawSpot(spot, type="TOUCH")
-			// setTimeout(function(){drawSpot(spot, type="CLEAR")}, POINT_SUSTAIN)
 			if (consume)
 				SENSOR_STATUS['sensors'][spot] = UNTOUCHED
 		}
@@ -243,11 +236,6 @@ function isTouched(){
 
 function showObjective(){
 	drawSpot(CLIMAX_COMBINATION_CURRENT, type="OBJECTIVE", text=CLIMAX)
-	// for (const sensor in SENSORS){
-	// 	if (CLIMAX_COMBINATION_CURRENT == sensor)
-	// 	else
-	// 		drawSpot(CLIMAX_COMBINATION_CURRENT, type="CLEAR")
-	// }
 }
 
 function checkObjective(consume=true){
@@ -265,20 +253,18 @@ function climaxUp(){
 	changeRemark(set=true, remarks=REMARKS_GOOD)
 	var comb_previous = CLIMAX_COMBINATION_CURRENT
 	drawSpot(CLIMAX_COMBINATION_CURRENT, type="CORRECT")
-	drawSpot(CLIMAX_COMBINATION_CURRENT, type="CLEAR")
-	// setTimeout(function(){drawSpot(comb_previous, type="CLEAR")}, POINT_SUSTAIN)
 	setClimax(CLIMAX + 1)
 }
 
 function climaxDown(){
 	changeRemark(set=true, remarks=REMARKS_BAD)
-	drawSpot(CLIMAX_COMBINATION_CURRENT, type="CLEAR")
+	// drawSpot(CLIMAX_COMBINATION_CURRENT, type="CLEAR")
 	setClimax(CLIMAX - 2)
 }
 
 function climaxZero(){
 	changeRemark(set=true, remarks=REMARKS_NOT_TOUCHING)
-	drawSpot(CLIMAX_COMBINATION_CURRENT, type="CLEAR")
+	// drawSpot(CLIMAX_COMBINATION_CURRENT, type="CLEAR")
 	setClimax(0)
 	UNTOUCHED_INTERVAL = UNTOUCHED_INTERVAL_INITIAL
 }
@@ -332,10 +318,10 @@ function gameLoop(){
 	clearSpots()
 	// drawClimax(1, type="CLEAR")
 	drawClimax(getNextUntouchTimeout(), type="TOUCH")
-	// drawClimax(CLIMAX, type="CLIMAX")
+	drawClimax(CLIMAX, type="CLIMAX")
 
 	showObjective()
-	console.log(CLIMAX_COMBINATION_CURRENT)
+	// console.log(CLIMAX_COMBINATION_CURRENT)
 	showTouches(consume=false)
 
 	if (!isTouched()){
