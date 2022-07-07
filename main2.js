@@ -31,7 +31,7 @@ function drawSpot(location, type="TOUCH", text=""){
 
 	radius = 38
 	if (type == "TOUCH"){
-		ctx.fillStyle = "#ff0000";
+		ctx.fillStyle = "rgba(255, 0, 0, 0.1)";
 		radius = 35
 	}
 	else if (type == "CORRECT")
@@ -66,6 +66,15 @@ function drawSpot(location, type="TOUCH", text=""){
 		ctx.stroke()
 	else if (type == "CLEAR")
 		ctx.clearRect(x-40, y-40, 80, 80)
+}
+
+function drawClimax(climax = 0, type = "GAUGE"){
+	ctx.fillStyle = "rgba(255, 0, 0, 1)";
+	if (type == "GAUGE"){
+		ctx.rect(7*dildoCanvas.width/8, dildoCanvas.height, dildoCanvas.width/8, -dildoCanvas.height*climax);
+		ctx.fill();
+	} else if (type == "CLEAR")
+		ctx.clearRect(7*dildoCanvas.width/8, dildoCanvas.height, dildoCanvas.width/8, -dildoCanvas.height*1);		
 }
 
 function clearSpots() {
@@ -122,11 +131,15 @@ REMARKS_SUSTAIN = 800
 CLIMAX_MAX = 10
 CLIMAX_ACCEL = 0.05
 
-POINT_SUSTAIN = 500
-
 UNTOUCHED_INTERVAL_INITIAL = 4000
 
-GAME_LOOP_INTERVAL = 200   // miliseconds
+POINT_SUSTAIN = 500
+
+GAME_LOOP_INTERVAL = 1000/30  
+
+SENSOR_UPDATE_INTERVAL = 200
+
+INIT_GAME_INTERVAL = 300
 
 // ================================================================= Variables
 CLIMAX = 0
@@ -134,11 +147,13 @@ CLIMAX_COMBINATION_CURRENT = null
 CLIMAX_COMBINATION_LIST = []
 
 UNTOUCHED_INTERVAL = UNTOUCHED_INTERVAL_INITIAL
+UNTOUCHED_TIME_END = 0
 UNTOUCHED_TIMEOUT = null
 
 GAME_LOOP = null
 
 STARTED = false
+SENSOR_UPDATE = null
 
 // ================================================================= Functions
 
@@ -191,12 +206,14 @@ function startGame(){
 	UNTOUCHED_COUNTER = 0
 	createClimaxCombination()
 	STARTED = true
+	changeRemark(set=false)
 	GAME_LOOP = setInterval(gameLoop, GAME_LOOP_INTERVAL)
 }
 
 function stopGame(){
 	console.log("Game stopped")
 	clearInterval(GAME_LOOP)
+	clearInterval(SENSOR_UPDATE)
 }
 
 function showTouches(){
@@ -220,12 +237,12 @@ function isTouched(){
 }
 
 function showObjective(){
-	right_spot = CLIMAX_COMBINATION_LIST[CLIMAX]
+	var right_spot = CLIMAX_COMBINATION_LIST[CLIMAX]
 	drawSpot(right_spot, type="OBJECTIVE", text=CLIMAX)
 }
 
 function checkObjective(){
-	right_spot = CLIMAX_COMBINATION_LIST[CLIMAX]
+	var right_spot = CLIMAX_COMBINATION_LIST[CLIMAX]
 	var ret = SENSOR_STATUS['sensors'][right_spot] == TOUCHED
 	SENSOR_STATUS['sensors'][right_spot] = UNTOUCHED
 	return ret
@@ -233,24 +250,22 @@ function checkObjective(){
 
 function calculateTouchInterval(){
 	UNTOUCHED_INTERVAL = UNTOUCHED_INTERVAL_INITIAL - ((CLIMAX_ACCEL * CLIMAX) * UNTOUCHED_INTERVAL_INITIAL)
-	console.log(UNTOUCHED_INTERVAL)
 }
 
 function climaxUp(){
 	changeRemark(set=true, remarks=REMARKS_GOOD)
-	right_spot = CLIMAX_COMBINATION_LIST[CLIMAX]
+	var right_spot = CLIMAX_COMBINATION_LIST[CLIMAX]
 	CLIMAX = CLIMAX + 1
 	drawSpot(right_spot, type="CORRECT")
-	setTimeout(function(){drawSpot(right_spot, type="CLEAR")}, POINT_SUSTAIN)
+	setTimeout(function(){drawSpot(right_spot, type="CLEAR")}, POINT_SUSTAIN/2)
 }
 
 function climaxDown(){
 	changeRemark(set=true, remarks=REMARKS_BAD)
-	right_spot = CLIMAX_COMBINATION_LIST[CLIMAX]
+	var right_spot = CLIMAX_COMBINATION_LIST[CLIMAX]
 	drawSpot(right_spot, type="CLEAR")
 	CLIMAX = CLIMAX - 2
 	if (CLIMAX <= 0) CLIMAX = 0
-	showObjective()
 }
 
 function climaxZero(){
@@ -258,18 +273,36 @@ function climaxZero(){
 	right_spot = CLIMAX_COMBINATION_LIST[CLIMAX]
 	drawSpot(right_spot, type="CLEAR")
 	CLIMAX = 0
-	showObjective()
 	UNTOUCHED_INTERVAL = UNTOUCHED_INTERVAL_INITIAL
 }
 
+function getNextUntouchTimeout(){
+
+	if (UNTOUCHED_TIMEOUT == null) return 1
+	if (UNTOUCHED_TIME_END == 0) return 1
+	var ms = (new Date()).getMilliseconds();
+	if (UNTOUCHED_TIME_END < ms) return 1
+	// console.log(UNTOUCHED_TIME_END)
+	// console.log(ms)
+	return (UNTOUCHED_TIME_END - ms) / UNTOUCHED_INTERVAL*10
+	
+}
+
+function initGame() {
+	changeRemark(set=true, remarks=REMARKS_STARTING, permanent=true)
+	CLIMAX_COMBINATION_LIST = ["TOP"]
+	SENSOR_UPDATE = setInterval(updateSensorStatus, SENSOR_UPDATE_INTERVAL)
+}
 // ================================================================= Game Loop
 
 function gameLoop(){
-	updateSensorStatus()
 	if (SENSOR_STATUS == null){
 		stopGame()
 		return
 	}
+	// drawClimax(1, type="CLEAR")
+	// drawClimax(getNextUntouchTimeout())
+
 	showObjective()
 
 	showTouches()
@@ -277,6 +310,7 @@ function gameLoop(){
 	if (!isTouched()){
 		if (UNTOUCHED_TIMEOUT == null){
 			calculateTouchInterval()
+			UNTOUCHED_TIME_END = (new Date()).getMilliseconds()+UNTOUCHED_INTERVAL/10;
 			UNTOUCHED_TIMEOUT = setTimeout(
 				climaxZero,
 				UNTOUCHED_INTERVAL
@@ -284,7 +318,7 @@ function gameLoop(){
 		}
 		return
 	}
-	clearTimeout(UNTOUCHED_TIMEOUT); UNTOUCHED_TIMEOUT = null
+	clearTimeout(UNTOUCHED_TIMEOUT); UNTOUCHED_TIMEOUT = null; UNTOUCHED_TIME_END = 0;
 
 
 	if (checkObjective()){
@@ -302,4 +336,11 @@ function gameLoop(){
 
 // ================================================================= Runtime
 
-startGame()
+initGame()
+INIT_GAME = setInterval(function(){
+		if (checkObjective()){
+			clearInterval(INIT_GAME)
+			console.log("Init game")
+			startGame()
+		}
+	}, INIT_GAME_INTERVAL)
